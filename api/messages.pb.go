@@ -24,6 +24,37 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type Empty struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Empty) Reset()         { *m = Empty{} }
+func (m *Empty) String() string { return proto.CompactTextString(m) }
+func (*Empty) ProtoMessage()    {}
+func (*Empty) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{0}
+}
+
+func (m *Empty) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Empty.Unmarshal(m, b)
+}
+func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
+}
+func (m *Empty) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Empty.Merge(m, src)
+}
+func (m *Empty) XXX_Size() int {
+	return xxx_messageInfo_Empty.Size(m)
+}
+func (m *Empty) XXX_DiscardUnknown() {
+	xxx_messageInfo_Empty.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Empty proto.InternalMessageInfo
+
 type LoginRequest struct {
 	Username             string   `protobuf:"bytes,1,opt,name=Username,proto3" json:"Username,omitempty"`
 	Password             string   `protobuf:"bytes,2,opt,name=Password,proto3" json:"Password,omitempty"`
@@ -36,7 +67,7 @@ func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
 func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()    {}
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{0}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{1}
 }
 
 func (m *LoginRequest) XXX_Unmarshal(b []byte) error {
@@ -71,8 +102,8 @@ func (m *LoginRequest) GetPassword() string {
 	return ""
 }
 
-// Token on login response needs to be set in metadata on the context for grpc calls in order to use chat service
-// the token should be sent using key token
+// Token on login response needs to be set in metadata on the context for grpc
+// calls in order to use chat service the token should be sent using key token
 type LoginResponse struct {
 	Token                string   `protobuf:"bytes,1,opt,name=Token,proto3" json:"Token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -84,7 +115,7 @@ func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
 func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()    {}
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{1}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{2}
 }
 
 func (m *LoginResponse) XXX_Unmarshal(b []byte) error {
@@ -114,6 +145,7 @@ func (m *LoginResponse) GetToken() string {
 
 type Message struct {
 	Data                 string   `protobuf:"bytes,1,opt,name=Data,proto3" json:"Data,omitempty"`
+	Username             string   `protobuf:"bytes,2,opt,name=Username,proto3" json:"Username,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -123,7 +155,7 @@ func (m *Message) Reset()         { *m = Message{} }
 func (m *Message) String() string { return proto.CompactTextString(m) }
 func (*Message) ProtoMessage()    {}
 func (*Message) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{2}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{3}
 }
 
 func (m *Message) XXX_Unmarshal(b []byte) error {
@@ -151,6 +183,13 @@ func (m *Message) GetData() string {
 	return ""
 }
 
+func (m *Message) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
 type MessageResp struct {
 	Data                 string   `protobuf:"bytes,1,opt,name=Data,proto3" json:"Data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -162,7 +201,7 @@ func (m *MessageResp) Reset()         { *m = MessageResp{} }
 func (m *MessageResp) String() string { return proto.CompactTextString(m) }
 func (*MessageResp) ProtoMessage()    {}
 func (*MessageResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{3}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{4}
 }
 
 func (m *MessageResp) XXX_Unmarshal(b []byte) error {
@@ -205,7 +244,7 @@ func (m *RegisterRequest) Reset()         { *m = RegisterRequest{} }
 func (m *RegisterRequest) String() string { return proto.CompactTextString(m) }
 func (*RegisterRequest) ProtoMessage()    {}
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{4}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{5}
 }
 
 func (m *RegisterRequest) XXX_Unmarshal(b []byte) error {
@@ -271,7 +310,7 @@ func (m *RegisterResponse) Reset()         { *m = RegisterResponse{} }
 func (m *RegisterResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterResponse) ProtoMessage()    {}
 func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{5}
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{6}
 }
 
 func (m *RegisterResponse) XXX_Unmarshal(b []byte) error {
@@ -292,38 +331,347 @@ func (m *RegisterResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RegisterResponse proto.InternalMessageInfo
 
+type FriendsListReq struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FriendsListReq) Reset()         { *m = FriendsListReq{} }
+func (m *FriendsListReq) String() string { return proto.CompactTextString(m) }
+func (*FriendsListReq) ProtoMessage()    {}
+func (*FriendsListReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{7}
+}
+
+func (m *FriendsListReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendsListReq.Unmarshal(m, b)
+}
+func (m *FriendsListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendsListReq.Marshal(b, m, deterministic)
+}
+func (m *FriendsListReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendsListReq.Merge(m, src)
+}
+func (m *FriendsListReq) XXX_Size() int {
+	return xxx_messageInfo_FriendsListReq.Size(m)
+}
+func (m *FriendsListReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendsListReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendsListReq proto.InternalMessageInfo
+
+type FriendsList struct {
+	Friends              []*Friend `protobuf:"bytes,1,rep,name=Friends,proto3" json:"Friends,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *FriendsList) Reset()         { *m = FriendsList{} }
+func (m *FriendsList) String() string { return proto.CompactTextString(m) }
+func (*FriendsList) ProtoMessage()    {}
+func (*FriendsList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{8}
+}
+
+func (m *FriendsList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendsList.Unmarshal(m, b)
+}
+func (m *FriendsList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendsList.Marshal(b, m, deterministic)
+}
+func (m *FriendsList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendsList.Merge(m, src)
+}
+func (m *FriendsList) XXX_Size() int {
+	return xxx_messageInfo_FriendsList.Size(m)
+}
+func (m *FriendsList) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendsList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendsList proto.InternalMessageInfo
+
+func (m *FriendsList) GetFriends() []*Friend {
+	if m != nil {
+		return m.Friends
+	}
+	return nil
+}
+
+type Friend struct {
+	Username             string   `protobuf:"bytes,1,opt,name=Username,proto3" json:"Username,omitempty"`
+	Email                string   `protobuf:"bytes,2,opt,name=Email,proto3" json:"Email,omitempty"`
+	FirstName            string   `protobuf:"bytes,3,opt,name=FirstName,proto3" json:"FirstName,omitempty"`
+	LastName             string   `protobuf:"bytes,4,opt,name=LastName,proto3" json:"LastName,omitempty"`
+	Status               string   `protobuf:"bytes,5,opt,name=Status,proto3" json:"Status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Friend) Reset()         { *m = Friend{} }
+func (m *Friend) String() string { return proto.CompactTextString(m) }
+func (*Friend) ProtoMessage()    {}
+func (*Friend) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{9}
+}
+
+func (m *Friend) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Friend.Unmarshal(m, b)
+}
+func (m *Friend) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Friend.Marshal(b, m, deterministic)
+}
+func (m *Friend) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Friend.Merge(m, src)
+}
+func (m *Friend) XXX_Size() int {
+	return xxx_messageInfo_Friend.Size(m)
+}
+func (m *Friend) XXX_DiscardUnknown() {
+	xxx_messageInfo_Friend.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Friend proto.InternalMessageInfo
+
+func (m *Friend) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *Friend) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *Friend) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *Friend) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
+
+func (m *Friend) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+type FriendAddResp struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FriendAddResp) Reset()         { *m = FriendAddResp{} }
+func (m *FriendAddResp) String() string { return proto.CompactTextString(m) }
+func (*FriendAddResp) ProtoMessage()    {}
+func (*FriendAddResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{10}
+}
+
+func (m *FriendAddResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendAddResp.Unmarshal(m, b)
+}
+func (m *FriendAddResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendAddResp.Marshal(b, m, deterministic)
+}
+func (m *FriendAddResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendAddResp.Merge(m, src)
+}
+func (m *FriendAddResp) XXX_Size() int {
+	return xxx_messageInfo_FriendAddResp.Size(m)
+}
+func (m *FriendAddResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendAddResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendAddResp proto.InternalMessageInfo
+
+type FriendRemoveResp struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FriendRemoveResp) Reset()         { *m = FriendRemoveResp{} }
+func (m *FriendRemoveResp) String() string { return proto.CompactTextString(m) }
+func (*FriendRemoveResp) ProtoMessage()    {}
+func (*FriendRemoveResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{11}
+}
+
+func (m *FriendRemoveResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendRemoveResp.Unmarshal(m, b)
+}
+func (m *FriendRemoveResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendRemoveResp.Marshal(b, m, deterministic)
+}
+func (m *FriendRemoveResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendRemoveResp.Merge(m, src)
+}
+func (m *FriendRemoveResp) XXX_Size() int {
+	return xxx_messageInfo_FriendRemoveResp.Size(m)
+}
+func (m *FriendRemoveResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendRemoveResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendRemoveResp proto.InternalMessageInfo
+
+type FriendRequests struct {
+	Friends              []*Friend `protobuf:"bytes,1,rep,name=Friends,proto3" json:"Friends,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *FriendRequests) Reset()         { *m = FriendRequests{} }
+func (m *FriendRequests) String() string { return proto.CompactTextString(m) }
+func (*FriendRequests) ProtoMessage()    {}
+func (*FriendRequests) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{12}
+}
+
+func (m *FriendRequests) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendRequests.Unmarshal(m, b)
+}
+func (m *FriendRequests) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendRequests.Marshal(b, m, deterministic)
+}
+func (m *FriendRequests) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendRequests.Merge(m, src)
+}
+func (m *FriendRequests) XXX_Size() int {
+	return xxx_messageInfo_FriendRequests.Size(m)
+}
+func (m *FriendRequests) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendRequests.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendRequests proto.InternalMessageInfo
+
+func (m *FriendRequests) GetFriends() []*Friend {
+	if m != nil {
+		return m.Friends
+	}
+	return nil
+}
+
+type FriendStatus struct {
+	Username             string   `protobuf:"bytes,1,opt,name=Username,proto3" json:"Username,omitempty"`
+	Status               string   `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FriendStatus) Reset()         { *m = FriendStatus{} }
+func (m *FriendStatus) String() string { return proto.CompactTextString(m) }
+func (*FriendStatus) ProtoMessage()    {}
+func (*FriendStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dc296cbfe5ffcd5, []int{13}
+}
+
+func (m *FriendStatus) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FriendStatus.Unmarshal(m, b)
+}
+func (m *FriendStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FriendStatus.Marshal(b, m, deterministic)
+}
+func (m *FriendStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FriendStatus.Merge(m, src)
+}
+func (m *FriendStatus) XXX_Size() int {
+	return xxx_messageInfo_FriendStatus.Size(m)
+}
+func (m *FriendStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_FriendStatus.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FriendStatus proto.InternalMessageInfo
+
+func (m *FriendStatus) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *FriendStatus) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
 func init() {
+	proto.RegisterType((*Empty)(nil), "api.Empty")
 	proto.RegisterType((*LoginRequest)(nil), "api.LoginRequest")
 	proto.RegisterType((*LoginResponse)(nil), "api.LoginResponse")
 	proto.RegisterType((*Message)(nil), "api.Message")
 	proto.RegisterType((*MessageResp)(nil), "api.MessageResp")
 	proto.RegisterType((*RegisterRequest)(nil), "api.RegisterRequest")
 	proto.RegisterType((*RegisterResponse)(nil), "api.RegisterResponse")
+	proto.RegisterType((*FriendsListReq)(nil), "api.FriendsListReq")
+	proto.RegisterType((*FriendsList)(nil), "api.FriendsList")
+	proto.RegisterType((*Friend)(nil), "api.Friend")
+	proto.RegisterType((*FriendAddResp)(nil), "api.FriendAddResp")
+	proto.RegisterType((*FriendRemoveResp)(nil), "api.FriendRemoveResp")
+	proto.RegisterType((*FriendRequests)(nil), "api.FriendRequests")
+	proto.RegisterType((*FriendStatus)(nil), "api.FriendStatus")
 }
 
 func init() { proto.RegisterFile("messages.proto", fileDescriptor_4dc296cbfe5ffcd5) }
 
 var fileDescriptor_4dc296cbfe5ffcd5 = []byte{
-	// 293 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x92, 0xcf, 0x4a, 0xc3, 0x40,
-	0x10, 0xc6, 0x1b, 0x9b, 0x68, 0x3b, 0xad, 0x5a, 0x87, 0x0a, 0x21, 0x28, 0xe8, 0x82, 0xe0, 0x29,
-	0x4a, 0x3d, 0x88, 0x47, 0x51, 0x7b, 0xaa, 0x22, 0x51, 0x1f, 0x60, 0xa5, 0x4b, 0xba, 0x68, 0xb2,
-	0x31, 0xb3, 0xc5, 0x67, 0xf1, 0x6d, 0x65, 0xff, 0xc4, 0x86, 0xe2, 0xad, 0xb7, 0xfc, 0xe6, 0x9b,
-	0x6f, 0xf2, 0xcd, 0x24, 0xb0, 0x57, 0x08, 0x22, 0x9e, 0x0b, 0x4a, 0xab, 0x5a, 0x69, 0x85, 0x5d,
-	0x5e, 0x49, 0x36, 0x85, 0xe1, 0x4c, 0xe5, 0xb2, 0xcc, 0xc4, 0xd7, 0x52, 0x90, 0xc6, 0x04, 0x7a,
-	0x6f, 0x24, 0xea, 0x92, 0x17, 0x22, 0x0e, 0x4e, 0x82, 0xf3, 0x7e, 0xf6, 0xc7, 0x46, 0x7b, 0xe6,
-	0x44, 0xdf, 0xaa, 0x9e, 0xc7, 0x5b, 0x4e, 0x6b, 0x98, 0x9d, 0xc1, 0xae, 0x9f, 0x43, 0x95, 0x2a,
-	0x49, 0xe0, 0x18, 0xa2, 0x57, 0xf5, 0x21, 0x4a, 0x3f, 0xc5, 0x01, 0x3b, 0x86, 0x9d, 0x47, 0x97,
-	0x02, 0x11, 0xc2, 0x7b, 0xae, 0xb9, 0xd7, 0xed, 0x33, 0x3b, 0x85, 0x81, 0x97, 0xcd, 0x9c, 0x7f,
-	0x5b, 0x7e, 0x02, 0xd8, 0xcf, 0x44, 0x2e, 0x49, 0x8b, 0x7a, 0xc3, 0xd0, 0x78, 0x04, 0xfd, 0xa9,
-	0xac, 0x49, 0x3f, 0x19, 0x63, 0xd7, 0x8a, 0xab, 0x82, 0x71, 0xce, 0xb8, 0x17, 0x43, 0xe7, 0x6c,
-	0xd8, 0x6c, 0xf7, 0x50, 0x70, 0xf9, 0x19, 0x47, 0x6e, 0x3b, 0x0b, 0x0c, 0x61, 0xb4, 0x8a, 0xe6,
-	0xee, 0x30, 0xb9, 0x86, 0xf0, 0x6e, 0xc1, 0x35, 0x5e, 0xc0, 0xe0, 0x45, 0x94, 0xf3, 0x66, 0xfb,
-	0x61, 0xca, 0x2b, 0x99, 0x7a, 0x4a, 0x46, 0x6d, 0x32, 0x56, 0xd6, 0x99, 0x10, 0x84, 0xb7, 0x4b,
-	0xbd, 0xc0, 0x4b, 0x88, 0xec, 0x65, 0xf1, 0xc0, 0x36, 0xb5, 0xbf, 0x56, 0x82, 0xed, 0x92, 0x7b,
-	0x21, 0xeb, 0xe0, 0x0d, 0xf4, 0x9a, 0x18, 0x38, 0xb6, 0x1d, 0x6b, 0x07, 0x4b, 0x0e, 0xd7, 0xaa,
-	0x8d, 0xf5, 0x7d, 0xdb, 0xfe, 0x1a, 0x57, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x2d, 0x38, 0x0e,
-	0x9e, 0x2c, 0x02, 0x00, 0x00,
+	// 493 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xdb, 0x6e, 0xd3, 0x40,
+	0x10, 0xb5, 0xe3, 0x5c, 0xda, 0x71, 0xda, 0x86, 0x69, 0x41, 0x51, 0xc4, 0x43, 0x59, 0xa9, 0x52,
+	0x24, 0x84, 0xa9, 0x02, 0x52, 0xd5, 0xc7, 0x00, 0xcd, 0x53, 0x40, 0xc8, 0x85, 0x0f, 0x58, 0xe4,
+	0x55, 0x6a, 0x11, 0x5f, 0xea, 0xd9, 0x80, 0xf8, 0x07, 0x7e, 0x80, 0xaf, 0xe4, 0x17, 0xd0, 0xde,
+	0x92, 0x35, 0xa0, 0xaa, 0x52, 0xdf, 0xf6, 0xcc, 0x65, 0xe7, 0x9c, 0x99, 0x9d, 0x85, 0xc3, 0x42,
+	0x10, 0xf1, 0x95, 0xa0, 0xa4, 0x6e, 0x2a, 0x59, 0x61, 0xc4, 0xeb, 0x9c, 0x0d, 0xa0, 0x77, 0x55,
+	0xd4, 0xf2, 0x07, 0x5b, 0xc0, 0x70, 0x59, 0xad, 0xf2, 0x32, 0x15, 0xb7, 0x1b, 0x41, 0x12, 0x27,
+	0xb0, 0xf7, 0x99, 0x44, 0x53, 0xf2, 0x42, 0x8c, 0xc3, 0xd3, 0x70, 0xba, 0x9f, 0x6e, 0xb1, 0xf2,
+	0x7d, 0xe4, 0x44, 0xdf, 0xab, 0x26, 0x1b, 0x77, 0x8c, 0xcf, 0x61, 0x76, 0x06, 0x07, 0xf6, 0x1e,
+	0xaa, 0xab, 0x92, 0x04, 0x9e, 0x40, 0xef, 0x53, 0xf5, 0x55, 0x94, 0xf6, 0x16, 0x03, 0xd8, 0x25,
+	0x0c, 0xde, 0x1b, 0x3a, 0x88, 0xd0, 0x7d, 0xc7, 0x25, 0xb7, 0x7e, 0x7d, 0x6e, 0x55, 0xef, 0xb4,
+	0xab, 0xb3, 0x67, 0x10, 0xdb, 0x54, 0x55, 0xe3, 0x7f, 0xe9, 0xec, 0x57, 0x08, 0x47, 0xa9, 0x58,
+	0xe5, 0x24, 0x45, 0xf3, 0x40, 0x41, 0xf8, 0x14, 0xf6, 0x17, 0x79, 0x43, 0xf2, 0x83, 0x4a, 0x8c,
+	0xb4, 0x73, 0x67, 0x50, 0x99, 0x4b, 0x6e, 0x9d, 0x5d, 0x93, 0xe9, 0xb0, 0x52, 0x7e, 0x55, 0xf0,
+	0x7c, 0x3d, 0xee, 0x19, 0xe5, 0x1a, 0x30, 0x84, 0xd1, 0x8e, 0x9a, 0xe9, 0x11, 0x1b, 0xc1, 0xe1,
+	0xa2, 0xc9, 0x45, 0x99, 0xd1, 0x32, 0x27, 0x99, 0x8a, 0x5b, 0xf6, 0x1a, 0x62, 0xcf, 0x82, 0x67,
+	0x30, 0xb0, 0x70, 0x1c, 0x9e, 0x46, 0xd3, 0x78, 0x16, 0x27, 0xbc, 0xce, 0x13, 0x63, 0x4b, 0x9d,
+	0x8f, 0xfd, 0x0c, 0xa1, 0x6f, 0xce, 0x77, 0xca, 0xdd, 0x12, 0xeb, 0x78, 0xc4, 0x1e, 0x20, 0xf4,
+	0x09, 0xf4, 0xaf, 0x25, 0x97, 0x1b, 0xb2, 0x4a, 0x2d, 0x62, 0x47, 0x70, 0x60, 0xd8, 0xcc, 0xb3,
+	0x4c, 0x69, 0x55, 0xda, 0x2d, 0x65, 0x51, 0x54, 0xdf, 0xf4, 0xfc, 0xd8, 0x85, 0xd3, 0x6e, 0x07,
+	0x45, 0xf7, 0x15, 0xfb, 0x06, 0x86, 0xe6, 0x68, 0xaa, 0xdd, 0xa9, 0x78, 0xc7, 0xb0, 0xe3, 0x33,
+	0x9c, 0x5d, 0x40, 0xf7, 0xed, 0x0d, 0x97, 0xf8, 0x12, 0xe2, 0x6b, 0x51, 0x66, 0xee, 0x49, 0x0e,
+	0x75, 0x41, 0x8b, 0x26, 0x23, 0x1f, 0x69, 0xce, 0xc1, 0xec, 0x77, 0xb8, 0x25, 0x89, 0x09, 0x44,
+	0xf3, 0xf5, 0x1a, 0x8f, 0x3d, 0x96, 0x6e, 0x8e, 0x36, 0xd7, 0x33, 0xb2, 0x00, 0xa7, 0x10, 0xcd,
+	0xb3, 0x0c, 0x7d, 0x55, 0x13, 0xf4, 0x80, 0xeb, 0x56, 0x80, 0x09, 0xf4, 0x4d, 0xa7, 0xda, 0xc1,
+	0x8f, 0xfd, 0x7e, 0xec, 0x3a, 0x19, 0xe0, 0x0b, 0xd8, 0xdb, 0x76, 0x11, 0x74, 0x90, 0x5e, 0xee,
+	0xc9, 0x71, 0x2b, 0xc1, 0x04, 0xb0, 0x00, 0x9f, 0xbb, 0xae, 0xb4, 0x82, 0x1f, 0x79, 0xc1, 0x76,
+	0x90, 0xc1, 0x79, 0x38, 0x23, 0xe8, 0xce, 0x37, 0xf2, 0x06, 0xcf, 0xa1, 0xa7, 0x17, 0x1c, 0x4d,
+	0x9c, 0xff, 0x69, 0x58, 0x15, 0xad, 0xfd, 0x67, 0x01, 0x5e, 0x2a, 0x56, 0xe6, 0xc5, 0xe3, 0x89,
+	0x8e, 0xf8, 0x6b, 0x37, 0xad, 0xa0, 0x7f, 0xd6, 0x22, 0xf8, 0xd2, 0xd7, 0x5f, 0xd5, 0xab, 0x3f,
+	0x01, 0x00, 0x00, 0xff, 0xff, 0xe3, 0x74, 0x34, 0x14, 0xbc, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -403,6 +751,250 @@ var _Chat_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
+	Metadata: "messages.proto",
+}
+
+// FriendsClient is the client API for Friends service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type FriendsClient interface {
+	All(ctx context.Context, in *FriendsListReq, opts ...grpc.CallOption) (*FriendsList, error)
+	Add(ctx context.Context, in *Friend, opts ...grpc.CallOption) (*FriendAddResp, error)
+	Remove(ctx context.Context, in *Friend, opts ...grpc.CallOption) (*FriendRemoveResp, error)
+	Requests(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*FriendRequests, error)
+	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Friends_StatusClient, error)
+}
+
+type friendsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewFriendsClient(cc *grpc.ClientConn) FriendsClient {
+	return &friendsClient{cc}
+}
+
+func (c *friendsClient) All(ctx context.Context, in *FriendsListReq, opts ...grpc.CallOption) (*FriendsList, error) {
+	out := new(FriendsList)
+	err := c.cc.Invoke(ctx, "/api.Friends/All", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *friendsClient) Add(ctx context.Context, in *Friend, opts ...grpc.CallOption) (*FriendAddResp, error) {
+	out := new(FriendAddResp)
+	err := c.cc.Invoke(ctx, "/api.Friends/Add", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *friendsClient) Remove(ctx context.Context, in *Friend, opts ...grpc.CallOption) (*FriendRemoveResp, error) {
+	out := new(FriendRemoveResp)
+	err := c.cc.Invoke(ctx, "/api.Friends/Remove", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *friendsClient) Requests(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*FriendRequests, error) {
+	out := new(FriendRequests)
+	err := c.cc.Invoke(ctx, "/api.Friends/Requests", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *friendsClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Friends_StatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Friends_serviceDesc.Streams[0], "/api.Friends/Status", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &friendsStatusClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Friends_StatusClient interface {
+	Recv() (*FriendStatus, error)
+	grpc.ClientStream
+}
+
+type friendsStatusClient struct {
+	grpc.ClientStream
+}
+
+func (x *friendsStatusClient) Recv() (*FriendStatus, error) {
+	m := new(FriendStatus)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// FriendsServer is the server API for Friends service.
+type FriendsServer interface {
+	All(context.Context, *FriendsListReq) (*FriendsList, error)
+	Add(context.Context, *Friend) (*FriendAddResp, error)
+	Remove(context.Context, *Friend) (*FriendRemoveResp, error)
+	Requests(context.Context, *Empty) (*FriendRequests, error)
+	Status(*Empty, Friends_StatusServer) error
+}
+
+// UnimplementedFriendsServer can be embedded to have forward compatible implementations.
+type UnimplementedFriendsServer struct {
+}
+
+func (*UnimplementedFriendsServer) All(ctx context.Context, req *FriendsListReq) (*FriendsList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method All not implemented")
+}
+func (*UnimplementedFriendsServer) Add(ctx context.Context, req *Friend) (*FriendAddResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+}
+func (*UnimplementedFriendsServer) Remove(ctx context.Context, req *Friend) (*FriendRemoveResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (*UnimplementedFriendsServer) Requests(ctx context.Context, req *Empty) (*FriendRequests, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Requests not implemented")
+}
+func (*UnimplementedFriendsServer) Status(req *Empty, srv Friends_StatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method Status not implemented")
+}
+
+func RegisterFriendsServer(s *grpc.Server, srv FriendsServer) {
+	s.RegisterService(&_Friends_serviceDesc, srv)
+}
+
+func _Friends_All_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FriendsListReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FriendsServer).All(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Friends/All",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FriendsServer).All(ctx, req.(*FriendsListReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Friends_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Friend)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FriendsServer).Add(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Friends/Add",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FriendsServer).Add(ctx, req.(*Friend))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Friends_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Friend)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FriendsServer).Remove(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Friends/Remove",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FriendsServer).Remove(ctx, req.(*Friend))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Friends_Requests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FriendsServer).Requests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Friends/Requests",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FriendsServer).Requests(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Friends_Status_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FriendsServer).Status(m, &friendsStatusServer{stream})
+}
+
+type Friends_StatusServer interface {
+	Send(*FriendStatus) error
+	grpc.ServerStream
+}
+
+type friendsStatusServer struct {
+	grpc.ServerStream
+}
+
+func (x *friendsStatusServer) Send(m *FriendStatus) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+var _Friends_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "api.Friends",
+	HandlerType: (*FriendsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "All",
+			Handler:    _Friends_All_Handler,
+		},
+		{
+			MethodName: "Add",
+			Handler:    _Friends_Add_Handler,
+		},
+		{
+			MethodName: "Remove",
+			Handler:    _Friends_Remove_Handler,
+		},
+		{
+			MethodName: "Requests",
+			Handler:    _Friends_Requests_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Status",
+			Handler:       _Friends_Status_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "messages.proto",
 }
 
