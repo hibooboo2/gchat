@@ -6,8 +6,11 @@ import (
 	"net"
 
 	"github.com/hibooboo2/gchat/api"
+	"github.com/hibooboo2/gchat/server/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -18,7 +21,9 @@ func main() {
 	defer lis.Close()
 
 	s := grpc.NewServer()
-	api.RegisterChatServer(s, &Server{})
+	a := auth.AuthSrv{}
+	api.RegisterChatServer(s, &Server{Auth: &a})
+	api.RegisterAuthServer(s, &a)
 
 	// and start...
 	if err := s.Serve(lis); err != nil {
@@ -27,13 +32,21 @@ func main() {
 }
 
 type Server struct {
+	Auth *auth.AuthSrv
 }
 
 func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageResp, error) {
-	log.Println("data:", m.Data)
 	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		log.Println(md.Get("TOKEN")[0])
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "missing authentication token")
 	}
+
+	t := md.Get("TOKEN")[0]
+	user, ok := s.Auth.ValidToken(t)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid authentication token")
+	}
+
+	log.Println(user, "sent message", m.Data)
 	return &api.MessageResp{Data: m.Data}, nil
 }
