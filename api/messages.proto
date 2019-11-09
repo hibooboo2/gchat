@@ -5,10 +5,37 @@ service Chat {
   rpc SendMessage(Message) returns (MessageResp) {}
 }
 
+service Auth {
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+}
+
+message LoginRequest {
+    string Username = 1;
+    string Password = 2;
+}
+
+// Token on login response needs to be set in metadata on the context for grpc calls in order to use chat service
+// the token should be sent using key token
+message LoginResponse {
+    string Token = 1;
+}
+
 message Message {
     string Data = 1;
 }
 
 message MessageResp {
     string Data = 1;
+}
+
+message RegisterRequest {
+    string Username = 1;
+    string Password = 2;
+    string FirstName = 3;
+    string LastName = 4;
+    string Email = 5;
+}
+
+message RegisterResponse {
 }

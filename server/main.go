@@ -7,6 +7,7 @@ import (
 
 	"github.com/hibooboo2/gchat/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func main() {
@@ -30,5 +31,9 @@ type Server struct {
 
 func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageResp, error) {
 	log.Println("data:", m.Data)
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		log.Println(md.Get("TOKEN")[0])
+	}
 	return &api.MessageResp{Data: m.Data}, nil
 }
