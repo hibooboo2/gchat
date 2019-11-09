@@ -5,6 +5,10 @@ service Chat {
   rpc SendMessage(Message) returns (MessageResp) {}
 }
 
-message Message {}
+message Message {
+    string Data = 1;
+}
 
-message MessageResp {}
+message MessageResp {
+    string Data = 1;
+}

@@ -19,10 +19,10 @@ func main() {
 	chatClient := api.NewChatClient(conn)
 
 	ctx := context.Background()
-	resp, err := chatClient.SendMessage(ctx, &api.Message{})
+	resp, err := chatClient.SendMessage(ctx, &api.Message{Data: "some string"})
 
 	if err != nil {
-		log.Fatalf("err")
+		log.Fatalln(err)
 	}
-	log.Println(resp)
+	log.Println("response was:", resp)
 }

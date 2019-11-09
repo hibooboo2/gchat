@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 
@@ -16,10 +17,18 @@ func main() {
 	defer lis.Close()
 
 	s := grpc.NewServer()
-	api.RegisterChatServer(s, &api.UnimplementedChatServer{})
+	api.RegisterChatServer(s, &Server{})
 
 	// and start...
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+type Server struct {
+}
+
+func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageResp, error) {
+	log.Println("data:", m.Data)
+	return &api.MessageResp{Data: m.Data}, nil
 }
