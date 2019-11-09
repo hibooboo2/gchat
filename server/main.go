@@ -20,9 +20,11 @@ func main() {
 	}
 	defer lis.Close()
 
-	s := grpc.NewServer()
 	a := auth.AuthSrv{}
-	api.RegisterChatServer(s, &Server{Auth: &a})
+	chat := Server{Auth: &a}
+
+	s := grpc.NewServer(grpc.UnaryInterceptor(chat.ServerAuthInterceptor))
+	api.RegisterChatServer(s, &chat)
 	api.RegisterAuthServer(s, &a)
 
 	// and start...
@@ -36,6 +38,16 @@ type Server struct {
 }
 
 func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageResp, error) {
+	user := ctx.Value("USER").(string)
+	log.Println(user, "sent message", m.Data)
+	return &api.MessageResp{Data: m.Data}, nil
+}
+
+func (s *Server) ServerAuthInterceptor(ctx context.Context, methodreq interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	log.Println(info.Server, info.FullMethod)
+	if info.Server != s {
+		return handler(ctx, methodreq)
+	}
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "missing authentication token")
@@ -46,7 +58,7 @@ func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageR
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid authentication token")
 	}
+	ctx = context.WithValue(ctx, "USER", user)
 
-	log.Println(user, "sent message", m.Data)
-	return &api.MessageResp{Data: m.Data}, nil
+	return handler(ctx, methodreq)
 }

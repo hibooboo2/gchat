@@ -27,5 +27,20 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	log.Println("response was:", resp)
+
+	a := api.NewAuthClient(conn)
+	regResp, err := a.Register(ctx, &api.RegisterRequest{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(regResp)
+	fc := api.NewFriendsClient(conn)
+	statusClient, err := fc.Status(ctx, nil)
+	if err != nil {
+		panic(err)
+	}
+	statusClient.Recv()
+
 }
