@@ -3,6 +3,10 @@ package api;
 
 service Chat {
   rpc SendMessage(Message) returns (MessageResp) {}
+  rpc MessagesWith(Friend) returns (MessageList) {}
+  rpc SendMessageToRoom(RoomMessage) returns (MessageResp) {}
+  rpc RoomMessages(Room) returns (MessageList) {}
+  rpc Messages(Empty) returns (stream Message) {}
 }
 
 service Friends {
@@ -31,7 +35,21 @@ message LoginResponse { string Token = 1; }
 
 message Message {
   string Data = 1;
-  string Username = 2;
+  string From = 2;
+  string To = 3;
+}
+
+message MessageList {
+  repeated Message Messages = 1;
+}
+
+message RoomMessage {
+  string RoomID = 1;
+  Message Message = 2;
+}
+
+message Room {
+  string ID = 1;
 }
 
 message MessageResp { string Data = 1; }
