@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 )
 
 func Hash(val string) string {
@@ -37,7 +38,8 @@ func Encrypt(val string, passphrase string) string {
 func Decrypt(val string, passphrase string) string {
 	data, err := base64.StdEncoding.DecodeString(val)
 	if err != nil {
-		panic(err)
+		log.Println("err: failed to decode string from base64", err)
+		return ""
 	}
 	key := []byte(Hash(passphrase))
 	block, err := aes.NewCipher(key)

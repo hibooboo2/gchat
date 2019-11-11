@@ -7,6 +7,7 @@ import (
 
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/hibooboo2/gchat/api"
+	"github.com/hibooboo2/gchat/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -97,6 +98,9 @@ func login(authClient api.AuthClient) (context.Context, error) {
 		Username: prompt.Input("What is your username? ", Empty),
 		Password: prompt.Input("What is your password? ", Empty),
 	}
+
+	in.Password = utils.Hash(in.Password)
+
 	ctx := context.Background()
 	l, err := authClient.Login(ctx, &in)
 	if err != nil {
