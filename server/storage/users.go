@@ -1,10 +1,9 @@
 package storage
 
 import (
-	"log"
-
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/model"
+	"github.com/hibooboo2/gchat/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
@@ -15,6 +14,9 @@ func (d *DB) GetUserID(username string) (uint, error) {
 	u := model.User{}
 	err := d.db.Select([]string{"id"}).Find(&u, "username = ?", username).Error
 	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return 0, status.Errorf(codes.NotFound, "user not found")
+		}
 		return 0, errors.Wrapf(err, "failed to get user: %s", username)
 	}
 	return u.ID, nil
@@ -29,7 +31,6 @@ func (d *DB) GetUser(username string) (*model.User, error) {
 		}
 		return nil, errors.Wrapf(err, "failed to get user: %s", username)
 	}
-	log.Println(u)
 	return &u, nil
 }
 
@@ -45,7 +46,7 @@ func (d *DB) SaveUser(u *api.RegisterRequest) error {
 
 	usr := model.User{
 		Username:  u.Username,
-		Password:  u.Password,
+		Password:  utils.Hash(u.Password),
 		LastName:  u.LastName,
 		FirstName: u.FirstName,
 		Email:     u.Email,

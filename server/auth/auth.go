@@ -2,13 +2,16 @@ package auth
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
+	"log"
+	"math/rand"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/storage"
+	"github.com/hibooboo2/gchat/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,6 +28,7 @@ func New(db *storage.DB) *AuthSrv {
 }
 
 func (a *AuthSrv) ValidToken(token string) (string, bool) {
+	token = utils.Decrypt(token, encryptionKey)
 	vals := strings.SplitN(token, "@", 2)
 	if len(vals) != 2 {
 		return "", false
@@ -34,10 +38,16 @@ func (a *AuthSrv) ValidToken(token string) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-
-	if sumString(u.Username+u.Password) != vals[1] {
+	t, err := time.Parse(time.RFC3339Nano, vals[1])
+	if err != nil {
+		log.Println("err: invalid time format in auth token")
 		return "", false
 	}
+	if time.Now().After(t) {
+		log.Println("err: token is expired")
+		return "", false
+	}
+
 	return u.Username, true
 }
 
@@ -50,7 +60,7 @@ func (a *AuthSrv) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginR
 	if u == nil || u.Password != req.Password {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid username or password")
 	}
-	return &api.LoginResponse{Token: req.Username + "@" + sumString(req.Username+req.Password)}, nil
+	return &api.LoginResponse{Token: genToken(req)}, nil
 }
 
 func (a *AuthSrv) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
@@ -66,8 +76,21 @@ func (a *AuthSrv) Register(ctx context.Context, req *api.RegisterRequest) (*api.
 	return &api.RegisterResponse{}, a.db.SaveUser(req)
 }
 
-func sumString(val string) string {
-	h := md5.New()
-	h.Write([]byte(val))
-	return fmt.Sprintf("%x", h.Sum(nil))
+func genToken(req *api.LoginRequest) string {
+	token := req.Username + "@" + time.Now().Add(time.Hour*24*7).Format(time.RFC3339Nano)
+	token = utils.Encrypt(token, encryptionKey)
+	log.Println(token)
+	return token
+}
+
+var encryptionKey string
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	key := make([]byte, 100)
+	n, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+	encryptionKey = string(key[:n])
 }

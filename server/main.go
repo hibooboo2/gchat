@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/comail/colog"
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/auth"
 	"github.com/hibooboo2/gchat/server/storage"
@@ -12,6 +13,9 @@ import (
 
 func main() {
 	log.SetFlags(log.Lshortfile)
+	colog.Register()
+	colog.SetDefaultLevel(colog.LDebug)
+	colog.SetMinLevel(colog.LDebug)
 	lis, err := net.Listen("tcp", ":9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -26,7 +30,7 @@ func main() {
 	a := auth.New(db)
 	chat := NewChatServer(db, a.ValidToken)
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(chat.ServerAuthInterceptor))
+	s := grpc.NewServer(grpc.UnaryInterceptor(chat.ServerAuthInterceptor), grpc.StreamInterceptor(chat.ServerStreamAuthInterceptor))
 	api.RegisterChatServer(s, chat)
 	api.RegisterAuthServer(s, a)
 	api.RegisterFriendsServer(s, &Friends{})

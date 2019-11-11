@@ -9,11 +9,11 @@ import (
 func (d *DB) SaveMessage(m *api.Message, from string) error {
 	to, err := d.GetUserID(m.To)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get to user ID")
+		return err
 	}
 	fromID, err := d.GetUserID(from)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get from user ID")
+		return err
 	}
 	msg := model.Message{
 		Data:   m.Data,
@@ -38,7 +38,7 @@ func (d *DB) GetMessages(username string, from string) (*api.MessageList, error)
 	ids[userB] = from
 
 	msgs := []model.Message{}
-	err = d.db.Debug().Find(&msgs, "((to_id = ? AND from_id = ?) OR (from_id = ? AND to_id = ?))", userA, userB, userA, userB).Error
+	err = d.db.Find(&msgs, "((to_id = ? AND from_id = ?) OR (from_id = ? AND to_id = ?))", userA, userB, userA, userB).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get messages between users")
 	}
