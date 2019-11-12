@@ -132,9 +132,8 @@ func login(authClient api.AuthClient) (context.Context, error) {
 }
 
 func (e *ExecutorScope) sendMessage() {
-	users := []string{"cj", "rae", "ferro"}
 	_, err := e.chatClient.SendMessage(e.ctx, &api.Message{
-		To:   prompt.Choose("Who do you want to message?", users),
+		To:   prompt.Input("Who do you want to message?", Empty),
 		Data: prompt.Input("What is your message?", Empty),
 	})
 
