@@ -56,33 +56,17 @@ func (e *ExecutorScope) executor(t string) {
 		err = reg(e.authClient)
 	case "login":
 		e.ctx, err = login(e.authClient)
-		log.Println("Logged in")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		stream, err := e.chatClient.Messages(e.ctx, &api.Empty{})
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		go func() {
-			msg, err := stream.Recv()
-			for err == nil {
-				if err == nil {
-					fmt.Println(msg.From, msg.Data)
-				}
-				msg, err = stream.Recv()
-			}
-		}()
+
 	case "message":
 		e.sendMessage()
-
+	case "notifications":
+		e.messageNotifications()
 	}
 
 	if err != nil {
 		fmt.Println(err)
 	}
+
 }
 
 func reg(authClient api.AuthClient) error {
@@ -108,6 +92,7 @@ func Commands(d prompt.Document) []prompt.Suggest {
 		{Text: "register", Description: "Register a user"},
 		{Text: "login", Description: "Login a user"},
 		{Text: "message", Description: "Send a message to a user"},
+		{Text: "notifications", Description: "Pull up notifiacations"},
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -142,4 +127,20 @@ func (e *ExecutorScope) sendMessage() {
 		return
 	}
 
+}
+func (e *ExecutorScope) messageNotifications() {
+	stream, err := e.chatClient.Messages(e.ctx, &api.Empty{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	go func() {
+		msg, err := stream.Recv()
+		for err == nil {
+			if err == nil {
+				fmt.Println(msg.From, msg.Data)
+			}
+			msg, err = stream.Recv()
+		}
+	}()
 }
