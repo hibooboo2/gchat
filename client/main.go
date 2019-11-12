@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile)
 	// dail server
 	conn, err := grpc.Dial(":9090", grpc.WithInsecure())
 	if err != nil {
@@ -23,7 +24,7 @@ func main() {
 	authClient := api.NewAuthClient(conn)
 	friendsClient := api.NewFriendsClient(conn)
 
-	es := &ExecutorScope{authClient: authClient}
+	es := &ExecutorScope{authClient: authClient, chatClient: chatClient, friendClient: friendsClient}
 	p := prompt.New(es.executor, Commands)
 
 	p.Run()
@@ -31,13 +32,6 @@ func main() {
 	ctx := context.Background()
 	// The following code is how you add metadata to the context for the server to use it.
 	ctx = metadata.AppendToOutgoingContext(ctx, "TOKEN", "some token from auth")
-	resp, err := chatClient.SendMessage(ctx, &api.Message{Data: "some string"})
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	log.Println("response was:", resp)
 
 	statusClient, err := friendsClient.Status(ctx, nil)
 	if err != nil {
@@ -48,8 +42,10 @@ func main() {
 }
 
 type ExecutorScope struct {
-	authClient api.AuthClient
-	ctx        context.Context
+	authClient   api.AuthClient
+	ctx          context.Context
+	chatClient   api.ChatClient
+	friendClient api.FriendsClient
 }
 
 func (e *ExecutorScope) executor(t string) {
@@ -60,9 +56,32 @@ func (e *ExecutorScope) executor(t string) {
 		err = reg(e.authClient)
 	case "login":
 		e.ctx, err = login(e.authClient)
+		log.Println("Logged in")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		stream, err := e.chatClient.Messages(e.ctx, &api.Empty{})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		go func() {
+			msg, err := stream.Recv()
+			for err == nil {
+				if err == nil {
+					fmt.Println(msg.From, msg.Data)
+				}
+				msg, err = stream.Recv()
+			}
+		}()
+	case "message":
+		e.sendMessage()
+
 	}
+
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }
 
@@ -88,6 +107,7 @@ func Commands(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
 		{Text: "register", Description: "Register a user"},
 		{Text: "login", Description: "Login a user"},
+		{Text: "message", Description: "Send a message to a user"},
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -109,4 +129,18 @@ func login(authClient api.AuthClient) (context.Context, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, "TOKEN", l.Token)
 
 	return ctx, nil
+}
+
+func (e *ExecutorScope) sendMessage() {
+	users := []string{"cj", "rae", "ferro"}
+	_, err := e.chatClient.SendMessage(e.ctx, &api.Message{
+		To:   prompt.Choose("Who do you want to message?", users),
+		Data: prompt.Input("What is your message?", Empty),
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 }
