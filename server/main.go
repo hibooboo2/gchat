@@ -15,7 +15,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	colog.Register()
 	colog.SetDefaultLevel(colog.LDebug)
-	colog.SetMinLevel(colog.LDebug)
+	colog.SetMinLevel(colog.LTrace)
 	lis, err := net.Listen("tcp", ":9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

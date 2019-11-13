@@ -121,7 +121,7 @@ func (s *Server) Messages(r *api.Empty, stream api.Chat_MessagesServer) error {
 		return nil
 	}
 	s.messageSubscribedUsers.Store(usr, stream)
-	stream.Send(&api.Message{Data: "You are now subscribed to notifications for messages"})
+	// stream.Send(&api.Message{Data: "You are now subscribed to notifications for messages"})
 	<-ctx.Done()
 	s.messageSubscribedUsers.Delete(usr)
 	log.Println("trace: subscribed user: %s is done", usr)
