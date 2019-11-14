@@ -61,8 +61,9 @@ func (e *ExecutorScope) executor(t string) {
 		e.sendMessage()
 	case "notifications":
 		e.messageNotifications()
+	case "send friend request":
+		e.sendFriendRequest()
 	}
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -92,7 +93,8 @@ func Commands(d prompt.Document) []prompt.Suggest {
 		{Text: "register", Description: "Register a user"},
 		{Text: "login", Description: "Login a user"},
 		{Text: "message", Description: "Send a message to a user"},
-		{Text: "notifications", Description: "Pull up notifiacations"},
+		{Text: "notifications", Description: "Pull up notifications"},
+		{Text: "send friend request", Description: "Send a user a friend request"},
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -143,4 +145,13 @@ func (e *ExecutorScope) messageNotifications() {
 			msg, err = stream.Recv()
 		}
 	}()
+}
+
+func (e *ExecutorScope) sendFriendRequest() {
+	_, err := e.friendClient.Add(e.ctx, &api.Friend{
+		Username: prompt.Input("Who do you want to message?", Empty),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 }
