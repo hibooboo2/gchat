@@ -18,3 +18,22 @@ type Message struct {
 	FromID uint
 	ToID   uint
 }
+
+type Friend struct {
+	gorm.Model
+	UserA string
+	UserB string
+}
+
+func (Friend) TableName() string {
+	return "friends"
+}
+
+type FriendRequest struct {
+	Requestor string
+	User      string
+}
+
+func (FriendRequest) TableName() string {
+	return "friend_requests"
+}

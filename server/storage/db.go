@@ -16,6 +16,6 @@ func New(fileLoc string) (*DB, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open db")
 	}
-	db.AutoMigrate(&model.Message{}, &model.User{})
+	db.AutoMigrate(&model.Message{}, &model.User{}, &model.Friend{}, &model.FriendRequest{})
 	return &DB{db}, nil
 }

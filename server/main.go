@@ -33,7 +33,7 @@ func main() {
 	s := grpc.NewServer(grpc.UnaryInterceptor(chat.ServerAuthInterceptor), grpc.StreamInterceptor(chat.ServerStreamAuthInterceptor))
 	api.RegisterChatServer(s, chat)
 	api.RegisterAuthServer(s, a)
-	api.RegisterFriendsServer(s, &Friends{})
+	api.RegisterFriendsServer(s, &Friends{db})
 
 	// and start...
 	if err := s.Serve(lis); err != nil {
