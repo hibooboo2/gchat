@@ -1,6 +1,9 @@
 package storage
 
 import (
+	"log"
+	"sync"
+
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/model"
 	"github.com/hibooboo2/gchat/utils"
@@ -50,6 +53,58 @@ func (d *DB) SaveUser(u *api.RegisterRequest) error {
 		LastName:  u.LastName,
 		FirstName: u.FirstName,
 		Email:     u.Email,
+		Status:    "offline",
 	}
 	return d.db.Save(&usr).Error
+}
+
+func (d *DB) UserOnline(username string, online bool, usersOnline sync.Map) error {
+	st := "online"
+	if !online {
+		st = "offline"
+	}
+
+	err := d.db.Model(&model.User{}).Where(`username = ?`, username).Update("status", st).Error
+	log.Printf("trace: user online %s %v", username, online)
+	if err != nil {
+		return errors.Wrapf(err, "failed to update online status for user %s", username)
+	}
+	l, err := d.AllFriends(username)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get all friends to send status for user %s", username)
+	}
+
+	friends := map[string]struct{}{}
+	for _, friend := range l.Friends {
+		friends[friend.Username] = struct{}{}
+	}
+	log.Printf("trace: got all friends to send status for user %v", friends)
+
+	status := &api.FriendStatus{Username: username, Status: st}
+	usersOnline.Range(func(key interface{}, value interface{}) bool {
+		log.Printf("Checking key: %v", key)
+		friendName, ok := key.(string)
+		if !ok {
+			return true
+		}
+
+		if _, ok := friends[friendName]; !ok {
+			return true
+		}
+
+		stream, ok := value.(api.Friends_StatusServer)
+		if !ok {
+			return true
+		}
+		err := stream.Send(status)
+		if err != nil {
+			log.Printf("err: failed to send status to: %s", username)
+			return true
+		}
+		log.Printf("info: Sent status to: %s", username)
+
+		return true
+	})
+
+	return nil
 }

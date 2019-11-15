@@ -21,8 +21,8 @@ type Server struct {
 	messageSubscribedUsers sync.Map
 }
 
-func NewChatServer(db *storage.DB, validateToken func(string) (string, bool)) *Server {
-	return &Server{db: db, validateToken: validateToken}
+func NewChatServer(db *storage.DB, validateToken func(string) (string, bool), messageSubscribedUsers sync.Map) *Server {
+	return &Server{db: db, validateToken: validateToken, messageSubscribedUsers: messageSubscribedUsers}
 }
 
 func (s *Server) AuthApplier(ctx context.Context, method string) (context.Context, error) {

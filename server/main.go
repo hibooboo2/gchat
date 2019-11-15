@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"sync"
 
 	"github.com/comail/colog"
 	"github.com/hibooboo2/gchat/api"
@@ -26,14 +27,16 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	statusSubscribedUsers := sync.Map{}
+	messageSubscribedUsers := sync.Map{}
 	a := auth.New(db)
-	chat := NewChatServer(db, a.ValidToken)
+
+	chat := NewChatServer(db, a.ValidToken, messageSubscribedUsers)
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(chat.ServerAuthInterceptor), grpc.StreamInterceptor(chat.ServerStreamAuthInterceptor))
 	api.RegisterChatServer(s, chat)
 	api.RegisterAuthServer(s, a)
-	api.RegisterFriendsServer(s, &Friends{db})
+	api.RegisterFriendsServer(s, &Friends{db, statusSubscribedUsers})
 
 	// and start...
 	if err := s.Serve(lis); err != nil {

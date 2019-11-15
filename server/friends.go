@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+	"sync"
 
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/storage"
@@ -10,7 +12,8 @@ import (
 )
 
 type Friends struct {
-	db *storage.DB
+	db                    *storage.DB
+	statusSubscribedUsers sync.Map
 }
 
 func (f *Friends) All(ctx context.Context, flr *api.FriendsListReq) (*api.FriendsList, error) {
@@ -34,6 +37,30 @@ func (f *Friends) Remove(ctx context.Context, friend *api.Friend) (*api.FriendRe
 func (f *Friends) Requests(ctx context.Context, req *api.Empty) (*api.FriendRequests, error) {
 	return f.db.GetFriendRequests(ctx.Value("USER").(string))
 }
-func (f *Friends) Status(*api.Empty, api.Friends_StatusServer) error {
+func (f *Friends) Status(m *api.Empty, stream api.Friends_StatusServer) error {
+	ctx := stream.Context()
+	usr := ctx.Value("USER").(string)
+
+	f.statusSubscribedUsers.Store(usr, stream)
+	friends, err := f.db.AllFriends(usr)
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to get friends statuses")
+	}
+	for _, friend := range friends.Friends {
+		err := stream.Send(&api.FriendStatus{Username: friend.Username, Status: friend.Status})
+		if err != nil {
+			return status.Errorf(codes.Internal, "failed to send friend status to user")
+		}
+		log.Println("trace: sent a status to user", usr)
+	}
+	log.Printf("debug: user %s subscribed to status", usr)
+	f.db.UserOnline(usr, true, f.statusSubscribedUsers)
+	defer func() {
+		f.statusSubscribedUsers.Delete(usr)
+		f.db.UserOnline(usr, false, f.statusSubscribedUsers)
+	}()
+	<-ctx.Done()
+	log.Printf("debug: user %s no longer subscribed to status", usr)
+
 	return nil
 }

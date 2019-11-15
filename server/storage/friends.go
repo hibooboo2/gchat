@@ -4,6 +4,7 @@ import (
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/model"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -14,13 +15,24 @@ func (d *DB) AllFriends(username string) (*api.FriendsList, error) {
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get friends from database: %v", err.Error())
 	}
+	friendListNames := []string{}
 	fl := &api.FriendsList{Friends: []*api.Friend{}}
 	for _, friend := range friends {
 		if friend.UserA == username {
-			fl.Friends = append(fl.Friends, &api.Friend{Username: friend.UserB})
+			friendListNames = append(friendListNames, friend.UserB)
 		} else {
-			fl.Friends = append(fl.Friends, &api.Friend{Username: friend.UserA})
+			friendListNames = append(friendListNames, friend.UserA)
 		}
+	}
+
+	users := []model.User{}
+	err = d.db.Find(&users, `username in (?)`, friendListNames).Error
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get friends for %s", username)
+	}
+
+	for _, friend := range users {
+		fl.Friends = append(fl.Friends, &api.Friend{Username: friend.Username, Status: friend.Status})
 	}
 	return fl, nil
 }
