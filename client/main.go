@@ -61,8 +61,11 @@ func (e *ExecutorScope) executor(t string) {
 		e.sendMessage()
 	case "notifications":
 		e.messageNotifications()
+	case "send friend request":
+		e.sendFriendRequest()
+	case "friends list":
+		e.getFriends()
 	}
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -92,7 +95,9 @@ func Commands(d prompt.Document) []prompt.Suggest {
 		{Text: "register", Description: "Register a user"},
 		{Text: "login", Description: "Login a user"},
 		{Text: "message", Description: "Send a message to a user"},
-		{Text: "notifications", Description: "Pull up notifiacations"},
+		{Text: "notifications", Description: "Pull up notifications"},
+		{Text: "send friend request", Description: "Send a user a friend request"},
+		{Text: "friends list", Description: "Get a list of your friends"},
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -143,4 +148,24 @@ func (e *ExecutorScope) messageNotifications() {
 			msg, err = stream.Recv()
 		}
 	}()
+}
+
+func (e *ExecutorScope) sendFriendRequest() {
+	_, err := e.friendClient.Add(e.ctx, &api.Friend{
+		Username: prompt.Input("Who do you want to send a friend request to?", Empty),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (e *ExecutorScope) getFriends() {
+	friends, err := e.friendClient.All(e.ctx, &api.FriendsListReq{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, friendsList := range friends.Friends {
+		fmt.Println(friendsList)
+	}
+
 }
