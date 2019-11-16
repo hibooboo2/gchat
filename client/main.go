@@ -46,6 +46,7 @@ type ExecutorScope struct {
 	ctx          context.Context
 	chatClient   api.ChatClient
 	friendClient api.FriendsClient
+	friendList   map[string]*api.Friend
 }
 
 func (e *ExecutorScope) executor(t string) {
@@ -65,6 +66,10 @@ func (e *ExecutorScope) executor(t string) {
 		e.sendFriendRequest()
 	case "friends list":
 		e.getFriends()
+	case "remove friend":
+		e.removeFriend()
+	case "status":
+		e.status()
 	}
 	if err != nil {
 		fmt.Println(err)
@@ -98,6 +103,8 @@ func Commands(d prompt.Document) []prompt.Suggest {
 		{Text: "notifications", Description: "Pull up notifications"},
 		{Text: "send friend request", Description: "Send a user a friend request"},
 		{Text: "friends list", Description: "Get a list of your friends"},
+		{Text: "remove friend", Description: "Removes a friend from your friends list"},
+		{Text: "status", Description: "checks the status of friends  from your friends list"},
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -160,12 +167,46 @@ func (e *ExecutorScope) sendFriendRequest() {
 }
 
 func (e *ExecutorScope) getFriends() {
+	e.friendList = map[string]*api.Friend{}
 	friends, err := e.friendClient.All(e.ctx, &api.FriendsListReq{})
 	if err != nil {
 		fmt.Println(err)
 	}
-	for _, friendsList := range friends.Friends {
-		fmt.Println(friendsList)
+	for _, friend := range friends.Friends {
+		e.friendList[friend.Username] = friend
 	}
 
+}
+
+func (e *ExecutorScope) removeFriend() {
+	username := prompt.Input("Which friend do you want to delete?", Empty)
+	_, err := e.friendClient.Remove(e.ctx, &api.Friend{
+		Username: username,
+	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	delete(e.friendList, username)
+
+}
+
+func (e *ExecutorScope) status() {
+	stream, err := e.friendClient.Status(e.ctx, &api.Empty{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	go func() {
+		for {
+			status, err := stream.Recv()
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			friend, ok := e.friendList[status.Username]
+			if ok {
+				friend.Status = status.Status
+			}
+		}
+	}()
 }
