@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"log"
+
 	"github.com/hibooboo2/gchat/api"
 	"github.com/hibooboo2/gchat/server/model"
 	"github.com/jinzhu/gorm"
@@ -41,7 +43,7 @@ func (d *DB) AddFriend(usernameA string, usernameB string) error {
 	usrs := []string{usernameA, usernameB}
 
 	friend := &api.Friend{}
-	err := d.db.First(&friend, `user_a in (?) and user_b in (?)`, usrs, usrs).Error
+	err := d.db.First(&friend, `(user_a = ? AND user_b = ?) OR (user_b = ? and user_a = ?)`, usernameA, usernameB, usernameA, usernameB).Error
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		return status.Errorf(codes.Internal, "failed to get from friends: %v", err.Error())
 	}
@@ -65,6 +67,7 @@ func (d *DB) AddFriend(usernameA string, usernameB string) error {
 		if err != nil {
 			return status.Errorf(codes.Internal, "failed to save friend request: %v", err)
 		}
+		log.Printf("trace: friend request saved %s %s", usernameA, usernameB)
 		return nil
 	}
 

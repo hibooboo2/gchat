@@ -55,7 +55,15 @@ func (d *DB) SaveUser(u *api.RegisterRequest) error {
 		Email:     u.Email,
 		Status:    "offline",
 	}
-	return d.db.Save(&usr).Error
+	err = d.db.Save(&usr).Error
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to save user: %s", err.Error())
+	}
+	err = d.db.Save(&model.Friend{UserA: u.Username, UserB: u.Username}).Error
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to save friend request: %v", err)
+	}
+	return nil
 }
 
 func (d *DB) UserOnline(username string, online bool, usersOnline sync.Map) error {

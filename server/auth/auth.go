@@ -65,7 +65,7 @@ func (a *AuthSrv) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginR
 
 func (a *AuthSrv) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
 	if len(req.Password) < 2 {
-		return nil, status.Error(codes.InvalidArgument, "password is not longer than 2 characters")
+		return nil, status.Error(codes.InvalidArgument, "password is not longer than 1 characters")
 	}
 	r := regexp.MustCompile(`[0-9A-Za-z_.]`)
 

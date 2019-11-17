@@ -35,8 +35,11 @@ func (s *Server) AuthApplier(ctx context.Context, method string) (context.Contex
 		return nil, status.Errorf(codes.Unauthenticated, "missing authentication token")
 	}
 
-	t := md.Get("TOKEN")[0]
-	user, ok := s.validateToken(t)
+	t := md.Get("TOKEN")
+	if len(t) != 1 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing authentication token in metadata")
+	}
+	user, ok := s.validateToken(t[0])
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid authentication token")
 	}

@@ -25,7 +25,11 @@ func (f *Friends) Add(ctx context.Context, fr *api.Friend) (*api.FriendAddResp, 
 		return nil, status.Errorf(codes.InvalidArgument, "must provide username in order to add a friend")
 	}
 	//XXX should return status of friend if they are added and not just a request made.
-	return &api.FriendAddResp{}, f.db.AddFriend(ctx.Value("USER").(string), fr.Username)
+	err := f.db.AddFriend(ctx.Value("USER").(string), fr.Username)
+	if err != nil {
+		return nil, err
+	}
+	return &api.FriendAddResp{}, status.Errorf(codes.OK, "user added")
 }
 
 func (f *Friends) Remove(ctx context.Context, friend *api.Friend) (*api.FriendRemoveResp, error) {
