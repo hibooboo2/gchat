@@ -10,6 +10,11 @@ type User struct {
 	FirstName string
 	LastName  string
 	Status    string
+	IsOnline  bool
+}
+
+func (User) TableName() string {
+	return "users"
 }
 
 type Message struct {

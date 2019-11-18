@@ -67,13 +67,8 @@ func (d *DB) SaveUser(u *api.RegisterRequest) error {
 }
 
 func (d *DB) UserOnline(username string, online bool, usersOnline sync.Map) error {
-	st := "online"
-	if !online {
-		st = "offline"
-	}
-
-	err := d.db.Model(&model.User{}).Where(`username = ?`, username).Update("status", st).Error
-	log.Printf("trace: user online %s %v", username, online)
+	err := d.db.Model(&model.User{}).Where(`username = ?`, username).Update("is_online", online).Error
+	log.Printf("trace: user status %s: %v", username, online)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update online status for user %s", username)
 	}
@@ -81,38 +76,74 @@ func (d *DB) UserOnline(username string, online bool, usersOnline sync.Map) erro
 	if err != nil {
 		return errors.Wrapf(err, "failed to get all friends to send status for user %s", username)
 	}
-
-	friends := map[string]struct{}{}
-	for _, friend := range l.Friends {
-		friends[friend.Username] = struct{}{}
+	u := &model.User{}
+	err = d.db.Select([]string{"status"}).First(u, "username = ?", username).Error
+	if err != nil {
+		return errors.Wrapf(err, "failed to get status for user %s", username)
 	}
-	log.Printf("trace: got all friends to send status for user %v", friends)
 
-	status := &api.FriendStatus{Username: username, Status: st}
-	usersOnline.Range(func(key interface{}, value interface{}) bool {
-		log.Printf("Checking key: %v", key)
-		friendName, ok := key.(string)
+	status := &api.FriendStatus{Username: username, Status: u.Status, Online: online}
+
+	for _, friend := range l.Friends {
+		value, ok := usersOnline.Load(friend.Username)
 		if !ok {
-			return true
-		}
-
-		if _, ok := friends[friendName]; !ok {
-			return true
+			continue
 		}
 
 		stream, ok := value.(api.Friends_StatusServer)
 		if !ok {
-			return true
+			continue
 		}
+
 		err := stream.Send(status)
 		if err != nil {
 			log.Printf("err: failed to send status to: %s", username)
-			return true
+			continue
 		}
 		log.Printf("info: Sent status to: %s", username)
 
-		return true
-	})
+	}
+	log.Printf("trace: got all friends to send status for user %v", l.Friends)
+
+	return nil
+}
+
+func (d *DB) UpdateStatus(username string, online bool, status string, usersOnline sync.Map) error {
+	u := model.User{}
+	err := d.db.Model(&model.User{}).Where(`username = ?`, username).Update(&model.User{IsOnline: online, Status: status}).Select([]string{"username", "status", "is_online"}).First(&u, "username = ?", username).Error
+	if err != nil {
+		return errors.Wrapf(err, "failed to update online status for user %s", username)
+	}
+
+	log.Printf("warn: %s %s %v", u.Username, u.Status, u.IsOnline)
+	l, err := d.AllFriends(username)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get all friends to send status for user %s", username)
+	}
+
+	st := &api.FriendStatus{Username: username, Status: u.Status, Online: u.IsOnline}
+	st.Status = status
+
+	for _, friend := range l.Friends {
+		value, ok := usersOnline.Load(friend.Username)
+		if !ok {
+			continue
+		}
+
+		stream, ok := value.(api.Friends_StatusServer)
+		if !ok {
+			continue
+		}
+
+		err := stream.Send(st)
+		if err != nil {
+			log.Printf("err: failed to send status to: %s", username)
+			continue
+		}
+		log.Printf("info: Sent status to: %s", username)
+
+	}
+	log.Printf("trace: got all friends to send status for user %v", l.Friends)
 
 	return nil
 }

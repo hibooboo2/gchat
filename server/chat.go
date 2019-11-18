@@ -26,10 +26,11 @@ func NewChatServer(db *storage.DB, validateToken func(string) (string, bool), me
 }
 
 func (s *Server) AuthApplier(ctx context.Context, method string) (context.Context, error) {
-	log.Println("debug: api called: ", method)
 	if strings.HasPrefix(method, "/api.Auth/") {
 		return ctx, nil
 	}
+	log.Println("trace: api called: ", method)
+
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "missing authentication token")
@@ -45,7 +46,6 @@ func (s *Server) AuthApplier(ctx context.Context, method string) (context.Contex
 	}
 
 	ctx = context.WithValue(ctx, "USER", user)
-	log.Printf("trace: user %s is authenticated and set on context", user)
 	return ctx, nil
 }
 
@@ -86,7 +86,7 @@ func (s *Server) ServerAuthInterceptor(ctx context.Context, methodreq interface{
 
 func (s *Server) SendMessage(ctx context.Context, m *api.Message) (*api.MessageResp, error) {
 	user := ctx.Value("USER").(string)
-	log.Println("trace: Recieved request to send message")
+	log.Println("trace: Received request to send message")
 	m.From = user
 	conn, ok := s.messageSubscribedUsers.Load(m.To)
 	if ok {
@@ -127,7 +127,7 @@ func (s *Server) Messages(r *api.Empty, stream api.Chat_MessagesServer) error {
 	// stream.Send(&api.Message{Data: "You are now subscribed to notifications for messages"})
 	<-ctx.Done()
 	s.messageSubscribedUsers.Delete(usr)
-	log.Println("trace: subscribed user: %s is done", usr)
+	log.Printf("trace: subscribed user: %s is done", usr)
 	return nil
 
 }

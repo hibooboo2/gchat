@@ -86,7 +86,7 @@ func genToken(req *api.LoginRequest) string {
 var encryptionKey string
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	key := make([]byte, 100)
 	n, err := rand.Read(key)
 	if err != nil {

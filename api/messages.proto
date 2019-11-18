@@ -15,6 +15,7 @@ service Friends {
   rpc Remove(Friend) returns (FriendRemoveResp) {}
   rpc Requests(Empty) returns (FriendRequests) {}
   rpc Status(Empty) returns (stream FriendStatus) {}
+  rpc SetStatus(StatusUpdate) returns (Empty) {}
 }
 
 service Auth {
@@ -39,18 +40,14 @@ message Message {
   string To = 3;
 }
 
-message MessageList {
-  repeated Message Messages = 1;
-}
+message MessageList { repeated Message Messages = 1; }
 
 message RoomMessage {
   string RoomID = 1;
   Message Message = 2;
 }
 
-message Room {
-  string ID = 1;
-}
+message Room { string ID = 1; }
 
 message MessageResp { string Data = 1; }
 
@@ -74,6 +71,7 @@ message Friend {
   string FirstName = 3;
   string LastName = 4;
   string Status = 5;
+  bool Online = 6;
 }
 
 message FriendAddResp {}
@@ -84,4 +82,10 @@ message FriendRequests { repeated Friend Friends = 1; }
 message FriendStatus {
   string Username = 1;
   string Status = 2;
+  bool Online = 3;
+}
+
+message StatusUpdate {
+  string Status = 1;
+  bool Online = 2;
 }

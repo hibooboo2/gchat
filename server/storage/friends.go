@@ -27,15 +27,12 @@ func (d *DB) AllFriends(username string) (*api.FriendsList, error) {
 		}
 	}
 
-	users := []model.User{}
-	err = d.db.Find(&users, `username in (?)`, friendListNames).Error
+	users := []*api.Friend{}
+	err = d.db.Table(model.User{}.TableName()).Select([]string{"status", "username", "is_online as online"}).Find(&users, `username in (?)`, friendListNames).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get friends for %s", username)
 	}
-
-	for _, friend := range users {
-		fl.Friends = append(fl.Friends, &api.Friend{Username: friend.Username, Status: friend.Status})
-	}
+	fl.Friends = users
 	return fl, nil
 }
 

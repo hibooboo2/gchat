@@ -51,20 +51,34 @@ func (f *Friends) Status(m *api.Empty, stream api.Friends_StatusServer) error {
 		return status.Errorf(codes.Internal, "failed to get friends statuses")
 	}
 	for _, friend := range friends.Friends {
-		err := stream.Send(&api.FriendStatus{Username: friend.Username, Status: friend.Status})
+		err := stream.Send(&api.FriendStatus{Username: friend.Username, Status: friend.Status, Online: friend.Online})
 		if err != nil {
 			return status.Errorf(codes.Internal, "failed to send friend status to user")
 		}
-		log.Println("trace: sent a status to user", usr)
 	}
-	log.Printf("debug: user %s subscribed to status", usr)
-	f.db.UserOnline(usr, true, f.statusSubscribedUsers)
+	log.Printf("debug: user %s subscribed to status sent %d statuses", usr, len(friends.Friends))
+	err = f.db.UserOnline(usr, true, f.statusSubscribedUsers)
+	if err != nil {
+		log.Printf("err: %v", err)
+	}
 	defer func() {
 		f.statusSubscribedUsers.Delete(usr)
-		f.db.UserOnline(usr, false, f.statusSubscribedUsers)
+		err := f.db.UserOnline(usr, false, f.statusSubscribedUsers)
+		if err != nil {
+			log.Printf("err: %v", err)
+		}
 	}()
 	<-ctx.Done()
 	log.Printf("debug: user %s no longer subscribed to status", usr)
 
 	return nil
+}
+
+func (f *Friends) SetStatus(ctx context.Context, su *api.StatusUpdate) (*api.Empty, error) {
+	user := ctx.Value("USER").(string)
+	err := f.db.UpdateStatus(user, su.Online, su.Status, f.statusSubscribedUsers)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to set status for user %s", user)
+	}
+	return &api.Empty{}, nil
 }

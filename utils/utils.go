@@ -54,7 +54,7 @@ func Decrypt(val string, passphrase string) string {
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		panic(err)
+		log.Println("err: failed to decrypt auth token: ", err)
 	}
 	return string(plaintext)
 }
