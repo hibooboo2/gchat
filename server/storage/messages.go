@@ -7,44 +7,23 @@ import (
 )
 
 func (d *DB) SaveMessage(m *api.Message, from string) error {
-	to, err := d.GetUserID(m.To)
-	if err != nil {
-		return err
-	}
-	fromID, err := d.GetUserID(from)
-	if err != nil {
-		return err
-	}
 	msg := model.Message{
-		Data:   m.Data,
-		FromID: fromID,
-		ToID:   to,
+		Data: m.Data,
+		From: from,
+		To:   m.To,
 	}
-
 	return d.db.Save(&msg).Error
 }
 
 func (d *DB) GetMessages(username string, from string) (*api.MessageList, error) {
-	userA, err := d.GetUserID(username)
-	if err != nil {
-		return nil, err
-	}
-	userB, err := d.GetUserID(from)
-	if err != nil {
-		return nil, err
-	}
-	ids := map[uint]string{}
-	ids[userA] = username
-	ids[userB] = from
-
 	msgs := []model.Message{}
-	err = d.db.Find(&msgs, "((to_id = ? AND from_id = ?) OR (from_id = ? AND to_id = ?))", userA, userB, userA, userB).Error
+	err := d.db.Debug().Find(&msgs, "(('to' = ? AND 'from' = ?) OR ('from' = ? AND 'to' = ?))", username, from, username, from).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get messages between users")
 	}
 	messages := api.MessageList{}
 	for _, m := range msgs {
-		messages.Messages = append(messages.Messages, &api.Message{Data: m.Data, From: ids[m.FromID], To: ids[m.ToID]})
+		messages.Messages = append(messages.Messages, &api.Message{Data: m.Data, From: m.From, To: m.To})
 	}
 	return &messages, nil
 }

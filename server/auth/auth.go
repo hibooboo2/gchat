@@ -38,6 +38,11 @@ func (a *AuthSrv) ValidToken(token string) (string, bool) {
 	if err != nil {
 		return "", false
 	}
+
+	if u == nil {
+		return "", false
+	}
+
 	t, err := time.Parse(time.RFC3339Nano, vals[1])
 	if err != nil {
 		log.Println("err: invalid time format in auth token")

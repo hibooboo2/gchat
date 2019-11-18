@@ -1,10 +1,15 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/jinzhu/gorm"
+)
 
 type User struct {
-	gorm.Model
-	Username  string
+	BaseTimes
+	Username        string `json:"username" gorm:"type:VARCHAR(36);primary_key;column:username"`
 	Password  string
 	Email     string
 	FirstName string
@@ -18,14 +23,45 @@ func (User) TableName() string {
 }
 
 type Message struct {
-	gorm.Model
+	Base
 	Data   string
-	FromID uint
-	ToID   uint
+	From string 
+	To   string
+}
+
+type RoomMessage struct {
+	Base
+	Data string
+	From string
+	To   string
+}
+
+type Room struct {
+	Base
+	Name string
+}
+
+type Base struct {
+	ID        string `json:"id" gorm:"type:VARCHAR(36);primary_key;column:id"`
+	BaseTimes
+}
+type BaseTimes struct{
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `sql:"index"`
+}
+
+// BeforeCreate will set a UUID rather than numeric ID.
+func (base *Base) BeforeCreate(scope *gorm.Scope) error {
+	if base.ID == "" {
+		result, _ := uuid.NewV4()
+		base.ID = result.String()
+	}
+	return scope.SetColumn("ID", base.ID)
 }
 
 type Friend struct {
-	gorm.Model
+	Base
 	UserA string
 	UserB string
 }

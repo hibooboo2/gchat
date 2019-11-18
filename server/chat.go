@@ -106,7 +106,7 @@ func (s *Server) MessagesWith(ctx context.Context, f *api.Friend) (*api.MessageL
 	return s.db.GetMessages(user, f.Username)
 }
 
-func (s *Server) SendMessageToRoom(context.Context, *api.RoomMessage) (*api.MessageResp, error) {
+func (s *Server) SendMessageToRoom(context.Context, *api.Message) (*api.MessageResp, error) {
 	return nil, errors.New("not implemented")
 
 }

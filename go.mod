@@ -7,6 +7,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.3
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/gdamore/tcell v1.3.0
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/protobuf v1.3.2
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jinzhu/gorm v1.9.11

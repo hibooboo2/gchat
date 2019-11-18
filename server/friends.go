@@ -57,13 +57,13 @@ func (f *Friends) Status(m *api.Empty, stream api.Friends_StatusServer) error {
 		}
 	}
 	log.Printf("debug: user %s subscribed to status sent %d statuses", usr, len(friends.Friends))
-	err = f.db.UserOnline(usr, true, f.statusSubscribedUsers)
+	err = f.db.UpdateStatus(usr, true, "", f.statusSubscribedUsers)
 	if err != nil {
 		log.Printf("err: %v", err)
 	}
 	defer func() {
 		f.statusSubscribedUsers.Delete(usr)
-		err := f.db.UserOnline(usr, false, f.statusSubscribedUsers)
+		err := f.db.UpdateStatus(usr, false, "", f.statusSubscribedUsers)
 		if err != nil {
 			log.Printf("err: %v", err)
 		}
