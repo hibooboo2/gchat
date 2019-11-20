@@ -55,7 +55,7 @@ func (d *DB) SaveUser(u *api.RegisterRequest) error {
 
 func (d *DB) UpdateStatus(username string, online bool, status string, usersOnline sync.Map) error {
 	u := model.User{}
-	q := d.db.Debug().Model(&model.User{}).Where(`username = ?`, username).Update("is_online", online)
+	q := d.db.Model(&model.User{}).Where(`username = ?`, username).Update("is_online", online)
 	log.Printf("info: status [%s] [%v] [%s]", username, online, status)
 	if status != "" {
 		log.Printf("info: Had status [%s] [%v] [%s]", username, online, status)

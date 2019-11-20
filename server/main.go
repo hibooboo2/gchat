@@ -40,6 +40,6 @@ func main() {
 
 	// and start...
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("err: failed to serve: %v", err)
 	}
 }
