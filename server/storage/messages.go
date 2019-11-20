@@ -17,7 +17,7 @@ func (d *DB) SaveMessage(m *api.Message, from string) error {
 
 func (d *DB) GetMessages(username string, from string) (*api.MessageList, error) {
 	msgs := []model.Message{}
-	err := d.db.Debug().Find(&msgs, "(('to' = ? AND 'from' = ?) OR ('from' = ? AND 'to' = ?))", username, from, username, from).Error
+	err := d.db.Debug().Find(&msgs, `(("to" = ? AND "from" = ?) OR ("from" = ? AND "to" = ?))`, username, from, username, from).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get messages between users")
 	}
